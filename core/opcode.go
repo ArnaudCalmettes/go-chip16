@@ -17,7 +17,7 @@ func (o Opcode) Op() int {
 	return int(o & 0xFF000000 >> 24)
 }
 
-// Returns the word argument
+// HHLL returns the word argument
 //
 //		Op YX LL HH
 //		      ^^^^^
@@ -25,7 +25,7 @@ func (o Opcode) HHLL() uint16 {
 	return uint16(o&0xFF<<8 | o&0xFF00>>8)
 }
 
-// Returns the X register argument
+// X returns the X register argument
 //
 //		Op YX LL HH
 //		    ^
@@ -33,7 +33,7 @@ func (o Opcode) X() uint8 {
 	return uint8(o & 0x0F0000 >> 16)
 }
 
-// Returns the Y register argument
+// Y returns the Y register argument
 //
 //		Op YX LL HH
 //		   ^
@@ -41,10 +41,17 @@ func (o Opcode) Y() uint8 {
 	return uint8(o & 0xF00000 >> 20)
 }
 
-// Returns the Z register argument
+// Z returns the Z register argument
 //
 //		Op YX 0Z 00
 //		       ^
 func (o Opcode) Z() uint8 {
 	return uint8(o & 0x0F00 >> 8)
+}
+
+// WithHHLL returns a copy of the opcode with hhll set to given value
+func (o Opcode) WithHHLL(hhll uint16) Opcode {
+	return Opcode(
+		uint32(o&0xFFFF0000) | uint32(hhll&0xFF00>>8|hhll&0x00FF<<8),
+	)
 }
