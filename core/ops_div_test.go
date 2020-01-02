@@ -29,44 +29,6 @@ var remTestCases = []arithTestCase{
 	{-5, -3, -2, false, false, true, false},
 }
 
-func checkOpFlags(
-	a *assert.Assertions,
-	test *arithTestCase,
-	flags CPUFlags,
-	op string,
-) {
-	a.Equalf(
-		test.c, flags.Carry(),
-		"(%d %s %d) wrong carry flag", test.x, op, test.y,
-	)
-	a.Equalf(
-		test.o, flags.Overflow(),
-		"(%d %s %d) wrong overflow flag", test.x, op, test.y,
-	)
-	a.Equalf(
-		test.n, flags.Negative(),
-		"(%d %s %d) wrong negative flag", test.x, op, test.y,
-	)
-	a.Equalf(
-		test.z, flags.Zero(),
-		"(%d %s %d) wrong zero flag", test.x, op, test.y,
-	)
-}
-
-func checkOpResults(
-	a *assert.Assertions,
-	test *arithTestCase,
-	res int16,
-	flags CPUFlags,
-	op string,
-) {
-	a.Equalf(
-		test.exp, res, "%d %s %d != %d",
-		test.x, op, test.y, test.exp,
-	)
-	checkOpFlags(a, test, flags, op)
-}
-
 // DIVI Rx, HHLL
 
 func TestDiviRxHHLL(t *testing.T) {
@@ -348,7 +310,7 @@ func TestRemRxRy(t *testing.T) {
 		v.Regs[4] = test.y
 
 		if a.NoError(v.Eval(Opcode(0xA7420000))) {
-			checkOpResults(a, &test, v.Regs[2], v.Flags, "MOD")
+			checkOpResults(a, &test, v.Regs[2], v.Flags, "%")
 			a.Equalf(Pointer(RAMStart), v.PC, "PC shouldn't move")
 			a.Equalf(Pointer(StackStart), v.SP, "SP shouldn't move")
 		}
@@ -389,7 +351,7 @@ func TestRemRxRyRz(t *testing.T) {
 		v.Regs[4] = test.y
 
 		if a.NoError(v.Eval(Opcode(0xA8420100))) {
-			checkOpResults(a, &test, v.Regs[1], v.Flags, "MOD")
+			checkOpResults(a, &test, v.Regs[1], v.Flags, "%")
 			a.Equalf(Pointer(RAMStart), v.PC, "PC shouldn't move")
 			a.Equalf(Pointer(StackStart), v.SP, "SP shouldn't move")
 		}

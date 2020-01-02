@@ -6,10 +6,19 @@ import (
 )
 
 const (
-	MemSize    = 65536
-	RAMStart   = 0x0000
+	// MemSize is the total memory size
+	MemSize = 65536
+
+	// RAMStart is the start address of the RAM
+	RAMStart = 0x0000
+
+	// StackStart is the start address of the stack
 	StackStart = 0xFDF0
-	IOStart    = 0xFFF0
+
+	// IOStart is the start address of the IO registers
+	IOStart = 0xFFF0
+
+	// PointerMax is the maximum valid 16 bit address
 	PointerMax = 0xFFFE
 )
 

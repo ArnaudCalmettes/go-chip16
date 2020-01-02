@@ -14,35 +14,6 @@ var andTestCases = []arithTestCase{
 	{-2, -3, -4, false, false, true, false},
 }
 
-func checkAndResults(
-	a *assert.Assertions,
-	res int16,
-	flags CPUFlags,
-	test *arithTestCase,
-) {
-	a.Equalf(test.exp, res, "%d & %d", test.x, test.y)
-	checkAndFlags(a, flags, test)
-}
-
-func checkAndFlags(a *assert.Assertions, flags CPUFlags, test *arithTestCase) {
-	a.Equalf(
-		test.c, flags.Carry(),
-		"(%d & %d) wrong carry flag", test.x, test.y,
-	)
-	a.Equalf(
-		test.o, flags.Overflow(),
-		"(%d & %d) wrong overflow flag", test.x, test.y,
-	)
-	a.Equalf(
-		test.n, flags.Negative(),
-		"(%d & %d) wrong negative flag", test.x, test.y,
-	)
-	a.Equalf(
-		test.z, flags.Zero(),
-		"(%d & %d) wrong zero flag", test.x, test.y,
-	)
-}
-
 // ANDI Rx, HHLL
 func TestAndiRxHHLL(t *testing.T) {
 	a := assert.New(t)
@@ -50,10 +21,10 @@ func TestAndiRxHHLL(t *testing.T) {
 
 	for _, test := range andTestCases {
 		v.Regs[3] = test.x
-		llhh := uint16(test.y)&0xFF<<8 | uint16(test.y)&0xFF00>>8
+		op := Opcode(0x60030000).WithHHLL(uint16(test.y))
 
-		if a.NoError(v.Eval(Opcode(0x60030000 | uint32(llhh)))) {
-			checkAndResults(a, v.Regs[3], v.Flags, &test)
+		if a.NoError(v.Eval(op)) {
+			checkOpResults(a, &test, v.Regs[3], v.Flags, "&")
 			a.Equalf(Pointer(RAMStart), v.PC, "PC shouldn't move")
 			a.Equalf(Pointer(StackStart), v.SP, "SP shouldn't move")
 		}
@@ -80,7 +51,7 @@ func TestAndRxRy(t *testing.T) {
 		v.Regs[4] = test.y
 
 		if a.NoError(v.Eval(Opcode(0x61420000))) {
-			checkAndResults(a, v.Regs[2], v.Flags, &test)
+			checkOpResults(a, &test, v.Regs[2], v.Flags, "&")
 			a.Equalf(Pointer(RAMStart), v.PC, "PC shouldn't move")
 			a.Equalf(Pointer(StackStart), v.SP, "SP shouldn't move")
 		}
@@ -107,7 +78,7 @@ func TestAndRxRyRz(t *testing.T) {
 		v.Regs[4] = test.y
 
 		if a.NoError(v.Eval(Opcode(0x62420600))) {
-			checkAndResults(a, v.Regs[6], v.Flags, &test)
+			checkOpResults(a, &test, v.Regs[6], v.Flags, "&")
 			a.Equalf(Pointer(RAMStart), v.PC, "PC shouldn't move")
 			a.Equalf(Pointer(StackStart), v.SP, "SP shouldn't move")
 		}
@@ -132,10 +103,10 @@ func TestTstiRxHHLL(t *testing.T) {
 
 	for _, test := range andTestCases {
 		v.Regs[3] = test.x
-		llhh := uint16(test.y)&0xFF<<8 | uint16(test.y)&0xFF00>>8
+		op := Opcode(0x63030000).WithHHLL(uint16(test.y))
 
-		if a.NoError(v.Eval(Opcode(0x63030000 | uint32(llhh)))) {
-			checkAndFlags(a, v.Flags, &test)
+		if a.NoError(v.Eval(op)) {
+			checkOpFlags(a, &test, v.Flags, "TST")
 			a.Equalf(Pointer(RAMStart), v.PC, "PC shouldn't move")
 			a.Equalf(Pointer(StackStart), v.SP, "SP shouldn't move")
 		}
@@ -163,7 +134,7 @@ func TestTstRxRy(t *testing.T) {
 		v.Regs[4] = test.y
 
 		if a.NoError(v.Eval(Opcode(0x64420000))) {
-			checkAndFlags(a, v.Flags, &test)
+			checkOpFlags(a, &test, v.Flags, "TST")
 			a.Equalf(Pointer(RAMStart), v.PC, "PC shouldn't move")
 			a.Equalf(Pointer(StackStart), v.SP, "SP shouldn't move")
 		}

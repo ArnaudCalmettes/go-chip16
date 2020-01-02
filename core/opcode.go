@@ -2,6 +2,7 @@ package core
 
 import "encoding/binary"
 
+// Opcode is our internal representation of an opcode.
 type Opcode uint32
 
 // Reads an Opcode from a byte slice
@@ -46,6 +47,14 @@ func (o Opcode) Y() uint8 {
 //		Op YX 0Z 00
 //		       ^
 func (o Opcode) Z() uint8 {
+	return uint8(o & 0x0F00 >> 8)
+}
+
+// N returns the N nibble argument
+//
+//		Op YX 0N 00
+//		       ^
+func (o Opcode) N() uint8 {
 	return uint8(o & 0x0F00 >> 8)
 }
 

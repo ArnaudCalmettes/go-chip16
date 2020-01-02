@@ -23,6 +23,7 @@ func TestOpcodeMethods(t *testing.T) {
 	a.Equalf(uint8(0x4), o.X(), "X() failed")
 	a.Equalf(uint8(0x3), o.Y(), "Y() failed")
 	a.Equalf(uint8(0x6), o.Z(), "Z() failed")
+	a.Equalf(uint8(0x6), o.N(), "N() failed")
 
 	a.Equalf(Opcode(0x12340123), o.WithHHLL(0x2301), "o.WithHHLL() failed")
 }

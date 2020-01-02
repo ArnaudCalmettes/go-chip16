@@ -12,6 +12,7 @@ const (
 // CPUFlags implements flags set by the chip16's CPU
 type CPUFlags uint8
 
+// Clear all flags
 func (f *CPUFlags) Clear() {
 	*f = 0x00
 }

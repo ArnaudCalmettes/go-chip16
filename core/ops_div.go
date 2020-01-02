@@ -2,7 +2,7 @@ package core
 
 import "fmt"
 
-var divideByZero = fmt.Errorf("Division by 0")
+var errDivideByZero = fmt.Errorf("Division by 0")
 
 func div16(x, y int16) (res int16, flags CPUFlags) {
 	res = x / y
@@ -38,7 +38,7 @@ func diviRxHHLL(v *VirtualMachine, o Opcode) error {
 	x := o.X()
 	d := int16(o.HHLL())
 	if d == 0 {
-		return divideByZero
+		return errDivideByZero
 	}
 	v.Regs[x], v.Flags = div16(v.Regs[x], d)
 	return nil
@@ -49,7 +49,7 @@ func divRxRy(v *VirtualMachine, o Opcode) error {
 	x := o.X()
 	d := v.Regs[o.Y()]
 	if d == 0 {
-		return divideByZero
+		return errDivideByZero
 	}
 	v.Regs[x], v.Flags = div16(v.Regs[x], d)
 	return nil
@@ -59,7 +59,7 @@ func divRxRy(v *VirtualMachine, o Opcode) error {
 func divRxRyRz(v *VirtualMachine, o Opcode) error {
 	d := v.Regs[o.Y()]
 	if d == 0 {
-		return divideByZero
+		return errDivideByZero
 	}
 	v.Regs[o.Z()], v.Flags = div16(v.Regs[o.X()], d)
 	return nil
@@ -70,7 +70,7 @@ func modiRxHHLL(v *VirtualMachine, o Opcode) error {
 	x := o.X()
 	d := int16(o.HHLL())
 	if d == 0 {
-		return divideByZero
+		return errDivideByZero
 	}
 	v.Regs[x], v.Flags = mod16(v.Regs[x], d)
 	return nil
@@ -81,7 +81,7 @@ func modRxRy(v *VirtualMachine, o Opcode) error {
 	x := o.X()
 	d := v.Regs[o.Y()]
 	if d == 0 {
-		return divideByZero
+		return errDivideByZero
 	}
 	v.Regs[x], v.Flags = mod16(v.Regs[x], d)
 	return nil
@@ -91,7 +91,7 @@ func modRxRy(v *VirtualMachine, o Opcode) error {
 func modRxRyRz(v *VirtualMachine, o Opcode) error {
 	d := v.Regs[o.Y()]
 	if d == 0 {
-		return divideByZero
+		return errDivideByZero
 	}
 	v.Regs[o.Z()], v.Flags = mod16(v.Regs[o.X()], d)
 	return nil
@@ -102,7 +102,7 @@ func remiRxHHLL(v *VirtualMachine, o Opcode) error {
 	x := o.X()
 	d := int16(o.HHLL())
 	if d == 0 {
-		return divideByZero
+		return errDivideByZero
 	}
 	v.Regs[x], v.Flags = rem16(v.Regs[x], d)
 	return nil
@@ -113,7 +113,7 @@ func remRxRy(v *VirtualMachine, o Opcode) error {
 	x := o.X()
 	d := v.Regs[o.Y()]
 	if d == 0 {
-		return divideByZero
+		return errDivideByZero
 	}
 	v.Regs[x], v.Flags = rem16(v.Regs[x], d)
 	return nil
@@ -123,7 +123,7 @@ func remRxRy(v *VirtualMachine, o Opcode) error {
 func remRxRyRz(v *VirtualMachine, o Opcode) error {
 	d := v.Regs[o.Y()]
 	if d == 0 {
-		return divideByZero
+		return errDivideByZero
 	}
 	v.Regs[o.Z()], v.Flags = rem16(v.Regs[o.X()], d)
 	return nil
