@@ -2,6 +2,7 @@ package core
 
 import "math"
 
+// Utility flag-setting multiplication for signed 16-bit integers
 func mul16(x, y int16) (res int16, flags CPUFlags) {
 	res32 := int32(x) * int32(y)
 	res = int16(res32)

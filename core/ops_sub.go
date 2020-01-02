@@ -1,14 +1,23 @@
 package core
 
-// Utility flag-setting sub function for signed 16-bit integers
+// Utility flag-setting difference between signed 16-bit integers
 func sub16(x, y int16) (diff int16, flags CPUFlags) {
 	diff = x - y
-	// The difference will underflow if the top bit of x is not set and the top
+
+	// Carry flag is set if the difference underflows.
+	// The difference underflows if the top bit of x is not set and the top
 	// bit of y is set (^x & y) or if they are the same (^(x ^ y)) and a borrow
 	// from the lower place happens. If that borrow happens, the result
 	// will be 1 - 1 - 1 = 0 - 0 - 1 = 1 (& diff).
-	flags.SetCarry(((^x&y)|(^(x^y)&diff))>>15 != 0)
-	flags.SetOverflow((diff > 0 && x < 0 && y > 0) || (diff < 0 && x > 0 && y < 0))
+	flags.SetCarry(((^x & y) | (^(x ^ y) & diff)) < 0)
+
+	// Overflow flag is set when:
+	// diff > 0 && x < 0 && y > 0,
+	// diff < 0 && x > 0 && y < 0.
+	// i.e. top bit is the same in diff and y (^(diff^y)) and differs between x
+	// and y (x^y)
+	flags.SetOverflow((x^y)&^(diff^y) < 0)
+
 	flags.SetNegative(diff < 0)
 	flags.SetZero(diff == 0)
 	return
