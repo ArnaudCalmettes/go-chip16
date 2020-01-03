@@ -1,8 +1,8 @@
 package core
 
 // Utility flag-setting add function for signed 16-bit integers
-func add16(x, y int16) (sum int16, flags CPUFlags) {
-	sum = x + y
+func add16(x, y int16, flags *CPUFlags) int16 {
+	sum := x + y
 
 	// Carry flag is set if the sum overflows.
 	// The sum overflows if both top bits are set (x & y) or if one of them
@@ -15,28 +15,27 @@ func add16(x, y int16) (sum int16, flags CPUFlags) {
 	// x and y (^(x^y)), and differs between x and the sum (x^sum).
 	flags.SetOverflow((x^sum)&^(x^y) < 0)
 
-	flags.SetNegative(sum < 0)
-	flags.SetZero(sum == 0)
-	return
+	flags.SetZN(sum)
+	return sum
 }
 
 // Set Rx to Rx + HHLL
 func addiRxHHLL(v *VirtualMachine, o Opcode) error {
 	x := o.X()
-	v.Regs[x], v.Flags = add16(v.Regs[x], int16(o.HHLL()))
+	v.Regs[x] = add16(v.Regs[x], int16(o.HHLL()), &v.Flags)
 	return nil
 }
 
 // Set Rx to Rx + Ry
 func addRxRy(v *VirtualMachine, o Opcode) error {
 	x := o.X()
-	v.Regs[x], v.Flags = add16(v.Regs[x], v.Regs[o.Y()])
+	v.Regs[x] = add16(v.Regs[x], v.Regs[o.Y()], &v.Flags)
 	return nil
 }
 
 // Set Rz to Rx + Ry
 func addRxRyRz(v *VirtualMachine, o Opcode) error {
-	v.Regs[o.Z()], v.Flags = add16(v.Regs[o.X()], v.Regs[o.Y()])
+	v.Regs[o.Z()] = add16(v.Regs[o.X()], v.Regs[o.Y()], &v.Flags)
 	return nil
 }
 

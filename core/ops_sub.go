@@ -18,8 +18,7 @@ func sub16(x, y int16) (diff int16, flags CPUFlags) {
 	// and y (x^y)
 	flags.SetOverflow((x^y)&^(diff^y) < 0)
 
-	flags.SetNegative(diff < 0)
-	flags.SetZero(diff == 0)
+	flags.SetZN(diff)
 	return
 }
 

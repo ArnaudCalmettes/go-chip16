@@ -53,6 +53,20 @@ func (f *CPUFlags) SetNegative(p bool) {
 	}
 }
 
+// SetZN is an efficient shorthand for:
+//
+//		f.SetNegative(val < 0)
+//		f.SetZero(val == 0)
+func (f *CPUFlags) SetZN(val int16) {
+	if val < 0 {
+		*f = (*f | flagN) &^ flagZ
+	} else if val == 0 {
+		*f = (*f | flagZ) &^ flagN
+	} else {
+		*f &^= flagZ | flagN
+	}
+}
+
 // Carry returns true if the Carry flag is raised
 func (f CPUFlags) Carry() bool {
 	return f&flagC != 0
