@@ -26,6 +26,22 @@ func (o Opcode) HHLL() uint16 {
 	return uint16(o&0xFF<<8 | o&0xFF00>>8)
 }
 
+// LL returns the low byte argument
+//
+//		Op YX LL HH
+//		      ^^
+func (o Opcode) LL() uint8 {
+	return uint8(o & 0xFF00 >> 8)
+}
+
+// HH returns the high byte argument
+//
+//		Op YX LL HH
+//		         ^^
+func (o Opcode) HH() uint8 {
+	return uint8(o)
+}
+
 // X returns the X register argument
 //
 //		Op YX LL HH

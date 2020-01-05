@@ -3,6 +3,8 @@ package vm
 import (
 	"encoding/binary"
 	"fmt"
+
+	"github.com/ArnaudCalmettes/go-chip16/chip16/graphics"
 )
 
 const (
@@ -41,14 +43,18 @@ type State struct {
 
 	// Flags is the set of CPU Flags
 	Flags CPUFlags
+
+	// Graphics is the chip16's GPU state
+	Graphics *graphics.State
 }
 
 // NewState creates a new State
 func NewState() *State {
 	return &State{
-		PC:  RAMStart,
-		SP:  StackStart,
-		RAM: make([]byte, MemSize),
+		PC:       RAMStart,
+		SP:       StackStart,
+		RAM:      make([]byte, MemSize),
+		Graphics: graphics.NewState(),
 	}
 }
 
