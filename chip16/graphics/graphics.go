@@ -1,16 +1,20 @@
 package graphics
 
 import (
-	"image"
+	"fmt"
 	"image/color"
 )
 
 const (
+	// ScreenW is the width of the screen
 	ScreenW = 320
+	// ScreenH is the height of the screen
 	ScreenH = 240
+	// PaletteSize is the memory size of the palette in RAM (in bytes)
+	PaletteSize = 3 * 16
 )
 
-var defaultPalette = []color.Color{
+var defaultPalette = []color.RGBA{
 	color.RGBA{0x00, 0x00, 0x00, 0x00}, // 0x0: Black (Transparent in FG)
 	color.RGBA{0x00, 0x00, 0x00, 0xFF}, // 0x1: Black
 	color.RGBA{0x88, 0x88, 0x88, 0xFF}, // 0x2: Gray
@@ -32,8 +36,8 @@ var defaultPalette = []color.Color{
 // DefaultPalette returns a new palette initialized to chip16's default colors.
 // This is kept a function so that a new color.Palette object gets created
 // everytime, to avoid side effects during palette update.
-func DefaultPalette() color.Palette {
-	p := make(color.Palette, len(defaultPalette))
+func DefaultPalette() []color.RGBA {
+	p := make([]color.RGBA, len(defaultPalette))
 	copy(p, defaultPalette)
 	return p
 }
@@ -41,13 +45,13 @@ func DefaultPalette() color.Palette {
 // State describes a state of the graphics system of the chip16.
 type State struct {
 	// Palette is the current color palette.
-	Palette color.Palette
+	Palette []color.RGBA
 
 	// BG is the current background color (palette index).
 	BG uint8
 
 	// Screen is the current foreground image.
-	FG *image.Paletted
+	FG []uint8
 
 	// SpriteW is the width of the sprite(s) to draw.
 	SpriteW uint8
@@ -67,7 +71,7 @@ func NewState() *State {
 	p := DefaultPalette()
 	s := &State{
 		Palette: p,
-		FG:      image.NewPaletted(image.Rect(0, 0, ScreenW, ScreenH), p),
+		FG:      make([]uint8, ScreenW*ScreenH),
 	}
 	return s
 }
@@ -78,6 +82,29 @@ var emptyFG = make([]uint8, ScreenW*ScreenH)
 func (s *State) Clear() {
 	s.BG = 0
 
-	// This is ~5x faster than recreating a paletted image altogether
-	copy(s.FG.Pix, emptyFG)
+	// This is ~6x faster than recreating the slice
+	copy(s.FG, emptyFG)
+}
+
+// LoadPalette loads the palette from RAM.
+//
+// Palette data is expected to start at offset 0 of the `mem` slice.
+//
+// The spec gives no detail about how colors are represented in memory.
+// According to the reference implementation, they are stored as a
+// contiguous sequence of 24-bit BGR vectors
+// (i.e little-endian 0xRRGGBB).
+//
+func (s *State) LoadPalette(mem []byte) error {
+	if len(mem) < PaletteSize {
+		return fmt.Errorf("palette out of bounds")
+	}
+	b := 0
+	for i := 0; i < 16; i++ {
+		s.Palette[i].B = mem[b]
+		s.Palette[i].G = mem[b+1]
+		s.Palette[i].R = mem[b+2]
+		b += 3
+	}
+	return nil
 }
