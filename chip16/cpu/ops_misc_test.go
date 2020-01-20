@@ -1,6 +1,7 @@
 package cpu
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/ArnaudCalmettes/go-chip16/chip16/vm"
@@ -59,6 +60,50 @@ func BenchmarkSprHHLL(b *testing.B) {
 	v := vm.NewState()
 	for n := 0; n < b.N; n++ {
 		sprHHLL(v, vm.Opcode(n))
+	}
+}
+
+// DRW Rx, Ry, HHLL
+func TestDrwRxRyHHLL(t *testing.T) {
+	a := assert.New(t)
+	v := vm.NewState()
+
+	// That's much more than memory can hold
+	v.Graphics.SpriteW = 255
+	v.Graphics.SpriteH = 255
+	a.Error(
+		Eval(v, vm.Opcode(0x050000FF)),
+		"out of bounds sprite didn't return an error",
+	)
+
+	v.Graphics.SpriteW = 16
+	v.Graphics.SpriteH = 16
+	a.NoError(Eval(v, vm.Opcode(0x05000000)))
+}
+
+func BenchmarkDrwRxRyHHLL(b *testing.B) {
+	v := vm.NewState()
+
+	// fill RAM with non-null pixels
+	for i := 0; i < vm.StackStart; i++ {
+		v.RAM[i] = 0xAA
+	}
+
+	benches := []uint8{4, 8, 16, 32, 64, 128}
+	for _, size := range benches {
+		b.Run(
+			fmt.Sprintf("%dx%d", size, size),
+			func(b *testing.B) {
+				v.Graphics.SpriteW = size / 2
+				v.Graphics.SpriteH = size
+				for n := 0; n < b.N; n++ {
+					op := vm.Opcode(0)
+					if err := drwRxRyHHLL(v, op); err != nil {
+						b.Fatal(err)
+					}
+				}
+			},
+		)
 	}
 }
 

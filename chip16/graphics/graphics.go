@@ -53,10 +53,11 @@ type State struct {
 	// Screen is the current foreground image.
 	FG []uint8
 
-	// SpriteW is the width of the sprite(s) to draw.
+	// SpriteW is the width of the current sprite (in bytes).
+	// The current sprite is 2*SpriteW pixels wide.
 	SpriteW uint8
 
-	// SpriteH is the height of the sprite(s) to draw.
+	// SpriteH is the height of the current sprite.
 	SpriteH uint8
 
 	// HFlip tells whether the sprite(s) must be flipped horizontally.
@@ -107,4 +108,71 @@ func (s *State) LoadPalette(mem []byte) error {
 		b += 3
 	}
 	return nil
+}
+
+func (s *State) DrawSprite(x, y int, mem []byte) (bool, error) {
+	w, h := int(s.SpriteW), int(s.SpriteH)
+	img := s.FG
+
+	// Not enough bytes to hold the sprite we expected
+	if len(mem) < (w*h + 1) {
+		return false, fmt.Errorf("sprite out of bounds")
+	}
+
+	// Nothing to draw on screen
+	if w == 0 || h == 0 || x >= ScreenW || y >= ScreenH || x+w*2 < 0 || y+x < 0 {
+		return false, nil
+	}
+
+	// Used to detect overlapping pixels
+	hit := 0
+
+	// Handle flips
+	startX, endX, incX := 0, w, 1
+	startY, endY, incY := 0, h, 1
+	if s.HFlip {
+		startX, endX, incX = w-1, -1, -1
+	}
+	if s.VFlip {
+		startY, endY, incY = h-1, -1, -1
+	}
+
+	// px, py: coordinates of the sprite pixels in ram
+	// i, j: coordinates of the sprite pixels in the FG image
+	j := y
+	for py := startY; py != endY; py += incY {
+		// Row is offscreen
+		if j < 0 || j > ScreenH-1 {
+			continue
+		}
+		i := x
+		for px := startX; px != endX; px += incX {
+			// Column is offscreen
+			if i < 0 || i > ScreenW-2 {
+				continue
+			}
+
+			p := mem[w*py+px]
+			hp := p >> 4
+			lp := p & 0x0F
+			if s.HFlip {
+				hp, lp = lp, hp
+			}
+
+			ij := ScreenW*j + i
+			if hp != 0 {
+				hit += int(img[ij])
+				img[ij] = hp
+			}
+			ij++
+			if lp != 0 {
+				hit += int(img[ij])
+				img[ij] = lp
+			}
+			i += 2
+		}
+		j++
+	}
+
+	return (hit > 0), nil
 }

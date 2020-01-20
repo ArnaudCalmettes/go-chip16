@@ -15,6 +15,28 @@ func cls(v *vm.State, _ vm.Opcode) error {
 	return nil
 }
 
+// Draw sprite from [HHLL] at (Rx, Ry)
+func drwRxRyHHLL(v *vm.State, o vm.Opcode) error {
+	c, err := v.Graphics.DrawSprite(
+		int(v.Regs[o.X()]),
+		int(v.Regs[o.Y()]),
+		v.RAM[o.HHLL():],
+	)
+	v.Flags.SetCarry(c)
+	return err
+}
+
+// Draw sprite from [Rz] at (Rx, Ry)
+func drwRxRyRz(v *vm.State, o vm.Opcode) error {
+	c, err := v.Graphics.DrawSprite(
+		int(v.Regs[o.X()]),
+		int(v.Regs[o.Y()]),
+		v.RAM[uint16(o.Z()):],
+	)
+	v.Flags.SetCarry(c)
+	return err
+}
+
 // Set the background color index to N
 func bgcN(v *vm.State, o vm.Opcode) error {
 	v.Graphics.BG = o.N()
@@ -48,8 +70,8 @@ func init() {
 	// VBLNK
 	setOp(0x03, "BGC N", bgcN)
 	setOp(0x04, "SPR HHLL", sprHHLL)
-	// DRW RX, RY, HHLL
-	// DRW RX, RY, RZ
+	setOp(0x05, "DRW RX, RY, HHLL", drwRxRyHHLL)
+	setOp(0x06, "DRW RX, RY, RZ", drwRxRyRz)
 	setOp(0x07, "RND Rx, HHLL", rndRxHHLL)
 	setOp(0x08, "FLIP HH", flip)
 	// SND0
